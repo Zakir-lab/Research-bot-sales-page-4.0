@@ -2502,7 +2502,24 @@ body.v75-polish .section-light .tone-pop{
   font-style:italic;
 }
 </style>
-</head>
+
+<style id="mobile-preheadline-fix">
+@media (max-width: 768px){
+  .preheadline--typed .preheadline__pill{
+    white-space: normal !important;
+    overflow: visible !important;
+    max-width: min(92vw, 680px) !important;
+    animation: none !important;
+  }
+
+  .hero .preheadline__pill{
+    font-size: clamp(16px, 4.8vw, 22px) !important;
+    line-height: 1.25 !important;
+    padding: 12px 16px !important;
+  }
+}
+</style>
+ </head>
 <body class="v75-polish">
 <!-- HERO (Refined Glow) -->
 <section class="hero tone-warm">
