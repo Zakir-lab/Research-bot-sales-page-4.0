@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Render Backend Test</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at top, #263c35, #090b0a 60%); color: #f5f8f6; }
+    main { width: min(620px, calc(100% - 36px)); padding: 34px; border: 1px solid #345e4f; border-radius: 22px; background: rgba(12, 20, 17, .94); box-shadow: 0 25px 80px rgba(0,0,0,.45); }
+    h1 { margin: 0 0 10px; font-size: clamp(30px, 7vw, 52px); line-height: 1; }
+    p { color: #b9c8c1; line-height: 1.6; }
+    .status { margin: 24px 0; padding: 16px; border-radius: 14px; background: #151b19; border: 1px solid #2a3d36; }
+    .status.good { border-color: #39d98a; color: #8ff0bd; }
+    .status.bad { border-color: #ff6b6b; color: #ffaaaa; }
+    label { display: block; margin: 14px 0 6px; font-weight: 700; }
+    input { box-sizing: border-box; width: 100%; padding: 13px; border-radius: 10px; border: 1px solid #3b4f47; background: #0c100f; color: white; font-size: 16px; }
+    button, a { display: inline-block; margin-top: 18px; padding: 13px 18px; border-radius: 999px; border: 0; background: #39d98a; color: #06110c; font-weight: 800; text-decoration: none; cursor: pointer; }
+    a { margin-left: 8px; background: #d9e4df; }
+    small { display: block; margin-top: 14px; color: #82928b; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Backend test</h1>
+    <p>This page calls server routes that a static-only host cannot run. If both tests turn green on Render, the backend deployment works.</p>
+    <div id="health" class="status">Checking the server…</div>
+    <form id="test-form">
+      <label for="name">Test name</label>
+      <input id="name" name="name" value="Zakir" maxlength="80" required>
+      <label for="email">Dummy email</label>
+      <input id="email" name="email" type="email" value="test@example.com" maxlength="160" required>
+      <button type="submit">Send safe test</button>
+      <a href="/">Open sales page</a>
+    </form>
+    <div id="result" class="status">Nothing has been submitted yet.</div>
+    <small>This demonstration does not save or forward the entered information.</small>
+  </main>
+  <script>
+    const health = document.querySelector("#health");
+    const result = document.querySelector("#result");
+
+    fetch("/api/health")
+      .then((response) => response.json())
+      .then((data) => {
+        health.className = "status good";
+        health.textContent = `✓ ${data.message}`;
+      })
+      .catch(() => {
+        health.className = "status bad";
+        health.textContent = "✕ The backend could not be reached.";
+      });
+
+    document.querySelector("#test-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      result.className = "status";
+      result.textContent = "Sending…";
+
+      try {
+        const response = await fetch("/api/test-enquiry", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            name: event.target.name.value,
+            email: event.target.email.value
+          })
+        });
+        const data = await response.json();
+        result.className = `status ${response.ok ? "good" : "bad"}`;
+        result.textContent = `${response.ok ? "✓" : "✕"} ${data.message}`;
+      } catch {
+        result.className = "status bad";
+        result.textContent = "✕ The backend request failed.";
+      }
+    });
+  </script>
+</body>
+</html>
